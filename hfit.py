@@ -14,8 +14,7 @@ import pyrosetta
 pyrosetta.init("-beta_nov16 -mute all")
 import pandas as pd
 import copy
-
-
+import warnings 
 
 
 
@@ -105,7 +104,6 @@ R1 = rotation(u,v)
 
 
 
-
 class HelixParameters():
     def __init__(self,r0=None,omega0=None,omega1=None,phi0=None,phi1=None,delta_z=None,invert=None,helix_length=None,z_aligned=False,translate_x=None,translate_y=None,translate_z=None,rotate_phi=None,rotate_theta=None,rotate_psi=None):
         self._r0,self._omega0,self._omega1,self._phi0,self._phi1,self._delta_z,self._invert,self._length,self._d,self._r1 = (None,)*10
@@ -135,7 +133,8 @@ class HelixParameters():
             self.rotate_phi(rotate_phi)
             self.rotate_theta(rotate_theta)
             self.rotate_psi(rotate_psi)
-    
+ 
+
     def __repr__(self):
         return f'Helical Parameters: r0={self.r0()},omega0={self.omega0()},omega1={self.omega1()},phi0={self.phi0()},' \
                f'phi1={self.phi1()},delta_z={self.delta_z()},d={self.d()},r1={self.r1()},' \
@@ -143,6 +142,7 @@ class HelixParameters():
                f'rotate_phi={self.rotate_phi()},rotate_theta={self.rotate_theta()},rotate_psi={self.rotate_psi()},' \
                f'invert={self.invert()},length={self.length()}'
     
+
     #hybrid setters/getters. They will always return the value you ask for, but if you pass 
     #something to the function, it'll update the stored value and then return the (updated) value
     def r0(self,r0:float=None):
@@ -152,51 +152,60 @@ class HelixParameters():
             self._r0 = r0
         return self._r0
         
+
     def omega0(self,omega0:float=None):
         if omega0 is not None:
             self._omega0 = omega0
         return self._omega0
             
+
     def omega1(self,omega1:float=None):    
         if omega1 is not None:
             self._omega1 = omega1
         return self._omega1
     
+
     def phi0(self,phi0:float=None):
         if phi0 is not None:
             assert(phi0 >= 0) #enforece pos only
             self._phi0 = phi0
         return self._phi0
     
+
     def phi1(self,phi1:float=None):
         if phi1 is not None:
             self._phi1 = phi1
         return self._phi1
     
+
     def delta_z(self,delta_z:float=None):
         if delta_z is not None:
             self._delta_z = delta_z
         return self._delta_z
     
+
     def invert(self,invert:bool=None):
         if invert is not None:
             self._invert = invert
         return self._invert
     
+
     def length(self,length:int=None):
         if length is not None:
             self._length = length
         return self._length
     
+
     def d(self,d:float=None):
         if d is not None:
-            warnings.warn("HelixParamaters variable d is a physical constraint should not be touched")
+            warnings.warn("HelixParamaters variable d is a physical constraint and should not be touched")
             self._d = d
         return self._d
     
+
     def r1(self,r1:float=None):
         if r1 is not None:
-            warnings.warn("HelixParamaters variable r1 is a physical constraint should not be touched")
+            warnings.warn("HelixParamaters variable r1 is a physical constraint and should not be touched")
             self._r1 = r1
         return self._r1
     
@@ -208,40 +217,45 @@ class HelixParameters():
         #print(f"self._translate_x: {self._translate_x}")
         return self._translate_x
     
+
     def translate_y(self,y:float=None):
         if y is not None:
             self._translate_y = y
         #print(f"self._translate_y: {self._translate_y}")
         return self._translate_y
     
+
     def translate_z(self,z:float=None):
         if z is not None:
             self._translate_z = z
         #print(f"self._translate_z: {self._translate_z}")
         return self._translate_z
     
+
     def rotate_phi(self,phi:float=None):
         if phi is not None:
             self._rotate_phi = phi
         #print(f"self._rotate_phi: {self._rotate_phi}")
         return self._rotate_phi
     
+
     def rotate_theta(self,theta:float=None):
         if theta is not None:
             self._rotate_theta = theta
         #print(f"self._rotate_theta: {self._rotate_theta}")
         return self._rotate_theta
     
+
     def rotate_psi(self,psi:float=None):
         if psi is not None:
             self._rotate_psi = psi
         #print(f"self._rotate_psi: {self._rotate_psi}")
         return self._rotate_psi
     
+
     def transformation_matrix(self):
         if self.z_aligned:
             return np.identity(4)
-            
             
         R = euler_to_R(self.rotate_phi(),self.rotate_theta(),self.rotate_psi())
         #print(R)
@@ -255,6 +269,7 @@ class HelixParameters():
         #print(M)
         return M
     
+
     def to_lmfit_parameters(self, round_num=None):
         if self.z_aligned and round_num is not None:
             raise ValueError("z aligned mode only has one round. Just don't set round_num")
@@ -289,11 +304,6 @@ class HelixParameters():
 
             #r0*omega0 = d * sin(alpha)
 
-
-
-
-
-        
             return params
         
         elif round_num == 1:
@@ -366,9 +376,6 @@ class HelixParameters():
 
             #r0*omega0 = d * sin(alpha)
 
-
-
-
             #axis independent code:
             params.add('translate_x', value=self.translate_x(),vary=True)
             params.add('translate_y', value=self.translate_y(),vary=True)
@@ -424,7 +431,7 @@ class HelixParameters():
         
         return d
 
-import warnings 
+
 
 class ParametricFit():
     def __init__(self, name, fit=None, write_axis=False):
@@ -443,24 +450,29 @@ class ParametricFit():
         if fit is not None:
             self.parse_fit(fit)
             
+
     #this really should only be accessed by the ParametricHelix class
     #take a fit and 
     def parse_fit(self, fit):
         self.fit = fit
         warnings.warn("PARSE_FIT NOT IMPLEMENTED")
     
+
     def name(self,name:str=None):
         if name is not None:
             self._name = name
         return self._name
     
+
     def append_trajectory_rmsd(self,rmsd):
         self.rmsd.append(rmsd)
+
 
     def append_trajectory_coords(self,coords, axis=None):
         self.coordinate_movie.append(coords)
         if self.write_axis:
             self.axis_movie.append(axis)
+
 
     def write_trajectory_movie(self, filename):
         # Generate movie PDB of fitting trajectories
@@ -485,6 +497,7 @@ class ParametricFit():
         f.write('END')
         f.close()
 
+
     def plot_trajectory_rmsd(self, ax=None):
         # Plot minimization trajectories
         
@@ -499,6 +512,7 @@ class ParametricFit():
         print("final rmsd: " + str(self.rmsd[-1]))
         return ax
     
+
     def plot_trajectory_parameter(self, parameter:str=None, ax=None):
         if ax is None:
             fig, ax = plt.subplots()
@@ -511,12 +525,11 @@ class ParametricFit():
         ax.set_ylabel('parameter value')
         plt.legend(loc='best')
         return ax
-    
+   
+
     def append_trajectory_parameters(self,hp:HelixParameters=None):
         self.parameter_history.append(hp.get_dict())
     
-
-
 
 
 class ParametricHelix():
@@ -579,17 +592,12 @@ class ParametricHelix():
             # 're-number' indices +/- around middle of helix
             # to patch Vikram's convention (start from middle of helix) and Huang's convention (start at resid 1) 
 
-            
-            
             # Correct for helices that have odd numbers of residues (otherwise fitting helix will be one residue short)
             if (self.helix_parameters.length() % 2) == 0:
                 residue_renumber_indices=np.arange(-delta_t,+delta_t,1)
             if (self.helix_parameters.length() % 2) != 0:
                 residue_renumber_indices=np.arange(-delta_t,+delta_t+1,1)
 
-
-            
-        
         else:
             
             residue_renumber_indices = residue_indices
@@ -605,8 +613,6 @@ class ParametricHelix():
         return moving_coordinates
 
 
-
-    
     def Ca_coords_from_stored_params(self,axis=False,residue_indices=None):
         #print("Ca_coords_from_stored_params")
         #print("residue_indices")
@@ -639,24 +645,7 @@ class ParametricHelix():
 #         delta_z=params['delta_z']
 #         invert=params['invert']
         self.helix_parameters.from_lmfit(params)
-        
-#         move = self.moving()
-        
-#         axis = np.array([[0,0,-10],[0,0,10]])
-        
-#         #print(move)
-#         #print(move.shape)
-#         padded_move = np.append(move,[[1]]*move.shape[0], axis = 1)
-#         padded_axis = np.append(axis,[[1]]*axis.shape[0], axis = 1)
-#         #print(padded_move)
-#         #print(self.helix_parameters.transformation_matrix())
-#         transformed = self.helix_parameters.transformation_matrix().dot(padded_move.T).T
-#         transformed_axis = self.helix_parameters.transformation_matrix().dot(padded_axis.T).T
-#         #print(transformed)
-        
-#         striped_transformed = np.delete(transformed,3,axis=1)
-#         striped_axis = np.delete(transformed_axis,3,axis=1)
-#         #print(striped_transformed)
+
         striped_transformed,striped_axis = self.Ca_coords_from_stored_params(axis=True)
         
         subtract_coord=striped_transformed-target
@@ -677,83 +666,11 @@ class ParametricHelix():
     #pose is assumed to be a single helix that I want to know about
     def fit_target_helix(self,pose, write_axis=False):
         if(not self.z_aligned):
-    #         self.fit = ParametricFit(self.name(),write_axis=write_axis)
-
-    #         #this gets all the coordinates. I only need Calphas
-    #         #target_coords = [ [ pose.residue( r.xyz(a)) for a in range(1, pose.residue(r).natoms() + 1)] for r in range(1, pose.total_residue() + 1)]
-
-    #         target_helix = np.array([np.array(pose.residue(r).atom("CA").xyz()) for r in range(1, pose.total_residue() + 1)])
-
-    #         helix_length=len(target_helix) # number of residues in the helix, [aa]
-
-    #         # not 100% sure this code will be necessary after the coordinate independence upgrade
-    #         if (target_helix[-1]-target_helix[0])[2]<0: # check helix orientation
-    #             invert=True
-    #         else:
-    #             invert=False
-
-    #         #some guesses
-    #         r0_guess=0.00001 # VARY, superhelical radius, [angstrom] -- BundleGridSampler=r0
-    #         delta_z_guess=0 # VARY, offest along the z axis, [angstrom] -- BundleGridSampler=z0_offset
-    #         phi1_guess=radians(0) # VARY, helical phase (around the internal axis of that helix), [degrees] -- BundleGridSampler=delta_omega1
-    #         #phi0_guess=radians(180) # FIXED? superhelical phase, i.e. 0, 90, 180, 270 for 4 evenly spaced helices, [degrees] -- BundleGridSampler=delta_omega0
-    #         omega0_guess=radians(-2.85) # FIXED? superhelical twist (-2.85 degrees for two layers), relates to omega1, [degrees] -- BundleGridSampler=omega0
-    #         omega1_guess=radians(+102.85) # FIXED? helical twist (+102.85 degrees for two layers), relates to omega0, [degrees] -- BundleGridSampler=omega1
-
-    #         # Generate quick estimates of phi0 to pass as better guess to avoid convergence problems and math domain errors
-    #         if np.average(target_helix,axis=0)[0] > 0 and np.average(target_helix,axis=0)[1] > 0: # quadrant I
-    #             phi0_guess=radians(degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
-    #         if np.average(target_helix,axis=0)[0] < 0 and np.average(target_helix,axis=0)[1] > 0: # quadrant II
-    #             phi0_guess=radians(180-degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
-    #         if np.average(target_helix,axis=0)[0] < 0 and np.average(target_helix,axis=0)[1] < 0: # quadrant III
-    #             phi0_guess=radians(degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0])))+180)
-    #         if np.average(target_helix,axis=0)[0] > 0 and np.average(target_helix,axis=0)[1] < 0: # quadrant IV
-    #             phi0_guess=radians(360-degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
-
-    #         phi0_guess=0
-
-    # #         #guess about transform        
-    # #         translate_x_guess = 0
-    # #         translate_y_guess = 0
-    # #         translate_z_guess = 0
-    # #         rotate_phi_guess = 0
-    # #         rotate_theta_guess = 0
-    # #         rotate_psi_guess = 0
-
-    #         #I can do better than that
-    #         helical_pseudo_axis = normalize(target_helix[-1] - target_helix[0])
-    #         helical_pseudo_origin = (target_helix[0] + target_helix[-1])/2
-    #         #print(target_helix[0],target_helix[-1],helical_pseudo_axis,helical_pseudo_origin)
-    #         exit("something about the pseduo_axis is bad")
-    #         rotate_phi_guess,rotate_theta_guess,rotate_psi_guess = R_to_euler(rotation(helical_pseudo_axis,[0,0,-1]))
-    #         translate_x_guess,translate_y_guess,translate_z_guess = helical_pseudo_origin
-
-
-
-    #         #input guesses
-    #         self.helix_parameters=HelixParameters(r0_guess,omega0_guess,omega1_guess,phi0_guess,phi1_guess,delta_z_guess,invert,helix_length,translate_x_guess,translate_y_guess,translate_z_guess,rotate_phi_guess,rotate_theta_guess,rotate_psi_guess)
-
-    #         #-----GENERATE PARAMETER DICTIONARY-----------
-
-
-
-    #         params = self.helix_parameters.to_lmfit_parameters()
-
-    #         # FIT
-    #         fit=minimize(self.rmsd_array,params,method='bfgs',args=(target_helix,True),**{"options":{"maxiter":1000}}) #,**{"ftol":1.e-3}
-
-
-    #         #self.helix_parameters.from_lmfit(fit)
-
-    #         self.fit.parse_fit(fit)
-
-
 
             #3 step fitting
             #1) using a slightly supercoiled helix, fit the transform, everything else fixed
             #2) using the fitted transform as fixed variables, fit the helical parameters
             #3) fit everything,initialized with previous fits, to work out kinks
-
 
             self.fit = ParametricFit(self.name(),write_axis=write_axis)
 
@@ -779,54 +696,19 @@ class ParametricHelix():
             omega0_guess=radians(-2.85) # FIXED? superhelical twist (-2.85 degrees for two layers), relates to omega1, [degrees] -- BundleGridSampler=omega0
             omega1_guess=radians(+102.85) # FIXED? helical twist (+102.85 degrees for two layers), relates to omega0, [degrees] -- BundleGridSampler=omega1
 
-
-            #make estimates of phi0 using a target helix aligned to z
-
-    #         # Generate quick estimates of phi0 to pass as better guess to avoid convergence problems and math domain errors
-    #         if np.average(target_helix,axis=0)[0] > 0 and np.average(target_helix,axis=0)[1] > 0: # quadrant I
-    #             phi0_guess=radians(degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
-    #         if np.average(target_helix,axis=0)[0] < 0 and np.average(target_helix,axis=0)[1] > 0: # quadrant II
-    #             phi0_guess=radians(180-degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
-    #         if np.average(target_helix,axis=0)[0] < 0 and np.average(target_helix,axis=0)[1] < 0: # quadrant III
-    #             phi0_guess=radians(degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0])))+180)
-    #         if np.average(target_helix,axis=0)[0] > 0 and np.average(target_helix,axis=0)[1] < 0: # quadrant IV
-    #             phi0_guess=radians(360-degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
-
             phi0_guess=0#radians(90)
 
-            #guess about transform        
-    #         translate_x_guess = 0
-    #         translate_y_guess = 0
-    #         translate_z_guess = 0
-    #         rotate_phi_guess = 0
-    #         rotate_theta_guess = 0
-    #         rotate_psi_guess = 0
-
-    #         #I can do better than that
             helical_pseudo_axis = normalize(target_helix[-1] - target_helix[0])
             helical_pseudo_origin = (target_helix[0] + target_helix[-1])/2
             #print(target_helix[0],target_helix[-1],helical_pseudo_axis,helical_pseudo_origin)
 
-
-
-
             rotate_phi_guess,rotate_theta_guess,rotate_psi_guess = R_to_euler(rotation([0,0,-1],helical_pseudo_axis))
             translate_x_guess,translate_y_guess,translate_z_guess = helical_pseudo_origin
-
 
             #According to Basile and Nick, the transformation I use is actually degenerate over 180deg so it won't correclty account for fully inverted helices
             #to fix this, I present the following hack
             orig_hp = HelixParameters(r0_guess,omega0_guess,omega1_guess,phi0_guess,phi1_guess,delta_z_guess,invert_guess,helix_length,False,translate_x_guess,translate_y_guess,translate_z_guess,rotate_phi_guess,rotate_theta_guess,rotate_psi_guess)
             self.helix_parameters=orig_hp
-    #         orig_init_helix = Ca_coords_from_stored_params()
-    #         orig_subtract_coord=orig_init_helix-target
-    #         original_rmsd=np.sqrt((1/self.helix_parameters.length())*np.sum(np.sum(np.power(orig_subtract_coord,2),axis=1)))
-
-    #         invert_hp = orig_hp = HelixParameters(r0_guess,omega0_guess,omega1_guess,phi0_guess,phi1_guess,delta_z_guess,invert_guess,helix_length,translate_x_guess,translate_y_guess,translate_z_guess,rotate_phi_guess,rotate_theta_guess,rotate_psi_guess)
-    #         #wait, let's just try this
-
-            #input guesses
-
 
             # FIT
             print("BEGIN ROUND 1")
@@ -845,21 +727,7 @@ class ParametricHelix():
             fit=minimize(self.rmsd_array,params,method='leastsq',args=(target_helix,True),**{"ftol":1.0e-4})
             self.helix_parameters.from_lmfit(fit.params)#retrieve last fit #not necessary I think
 
-
-
-    #         #standard protocol
-    #         params = self.helix_parameters.to_lmfit_parameters(round_num=None)
-    # #        fit=minimize(self.rmsd_array,params,method='leastsq',args=(target_helix,True),**{"ftol":1e-3}) #"maxiter":1000 #,**{"ftol":1.e-3}
-    #         fit=minimize(self.rmsd_array,params,method='bfgs',args=(target_helix,True),**{"options":{}}) #"maxiter":1000 #,**{"ftol":1.e-3}
-    #         self.helix_parameters.from_lmfit(fit.params)
-
-
-
-
-
             self.fit.parse_fit(fit)
-
-
 
             return self.fit
         
@@ -888,7 +756,6 @@ class ParametricHelix():
 
 
             #make estimates of phi0 using a target helix aligned to z
-
             # Generate quick estimates of phi0 to pass as better guess to avoid convergence problems and math domain errors
             if np.average(target_helix,axis=0)[0] > 0 and np.average(target_helix,axis=0)[1] > 0: # quadrant I
                 phi0_guess=radians(degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
@@ -899,12 +766,8 @@ class ParametricHelix():
             if np.average(target_helix,axis=0)[0] > 0 and np.average(target_helix,axis=0)[1] < 0: # quadrant IV
                 phi0_guess=radians(360-degrees(atan(abs(np.average(target_helix,axis=0)[1])/abs(np.average(target_helix,axis=0)[0]))))
 
-
-
-       
             orig_hp = HelixParameters(r0_guess,omega0_guess,omega1_guess,phi0_guess,phi1_guess,delta_z_guess,invert_guess,helix_length,True)
             self.helix_parameters=orig_hp
-
 
             params = self.helix_parameters.to_lmfit_parameters()
 #            fit=minimize(self.rmsd_array,params,method='leastsq',args=(target_helix,True),**{"ftol":1e-3}) #"maxiter":1000 #,**{"ftol":1.e-3}
@@ -913,15 +776,7 @@ class ParametricHelix():
             self.fit.parse_fit(fit)
             return self.fit
             
-            
-            
-            
-            
-            
-            
-            
-            
-    
+
     #assume it has ss
     def find_helices_in_chain(self,input_pose,chain,min_len=3):
         pyrosetta.rosetta.core.scoring.dssp.Dssp(pose).insert_ss_into_pose(pose, True) #for some reason the ss wasn't being stored? 
